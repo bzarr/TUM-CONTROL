@@ -17,11 +17,9 @@ def pred_stm(veh_params_file, tire_params_file = "pacejka_params_file.yaml"):
     and sets the dynamics of the vehicle using various tire and physical parameters. 
     The function can use two different models for tire behavior: Pacejka 'magic formula' 
     and AT-model. The default tire model is Pacejka 'magic formula'. 
-    The vehicle parameters such as mass, dimensions, and aerodynamics are set for a 
-    BMW 320i. 
     The function takes two required arguments: 'veh_params_file' and an optional argument
-     'model_type' for the tire model. If the tire model is Pacejka, 
-     it also takes an optional argument 'tire_params_file', which is set to "pacejka_params_file.yaml" by default.
+    'model_type' for the tire model. If the tire model is Pacejka, 
+    it also takes an optional argument 'tire_params_file', which is set to "pacejka_params_file.yaml" by default.
     """
 
     # reference point: center of mass

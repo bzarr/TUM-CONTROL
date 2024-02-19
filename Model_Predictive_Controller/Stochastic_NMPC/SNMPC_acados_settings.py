@@ -1,85 +1,160 @@
 # Created on Tue Dec 06 11:20 2022
 
 # Author: Baha Zarrouki (baha.zarrouki@tum.de)
-# based on acados python documentation: https://docs.acados.org/python_interface/index.html
+#         Chenyang Wang (16chenyang.wang@tum.de)
 
 from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
-from Prediction_Models.pred_model_dynamic_stm_pacejka import pred_stm
+from .pred_model_dynamic_disc import pred_stm
+from .stochastic_mpc_utils import *
 import scipy.linalg
 import numpy as np
-from casadi import vertcat, sqrt, mod, pi, if_else, MX, interp1d, Function
+from casadi import vertcat, sqrt, fmod, pi, if_else, MX, Function, sum1
 
 """
-Source: [1] Zarrouki, Baha, Chenyang Wang, and Johannes Betz. "A stochastic nonlinear model predictive control with an uncertainty propagation horizon for autonomous vehicle motion control." arXiv preprint arXiv:2310.18753 (2023).
+Source: [1] Zarrouki, Baha, Chenyang Wang, and Johannes Betz. 
+        "A stochastic nonlinear model predictive control with an uncertainty propagation horizon 
+        for autonomous vehicle motion control." arXiv preprint arXiv:2310.18753 (2023).
 """
 
-def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_max_interpolant, combined_acc_limits, veh_params_file = "veh_parameters_bmw320i.yaml", tire_params_file= "pacejka_params_file.yaml", solver_generate_C_code = True, solver_build = True):
+def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen,ax_max_interpolant, ay_max_interpolant, combined_acc_limits, SNMPC_params, veh_params_file = "veh_parameters_bmw320i.yaml", tire_params_file= "pacejka_params_file.yaml", solver_generate_C_code = True, solver_build = True):
 
     ocp = AcadosOcp()
+    Ts                  = Tf / N
+    # --- load SNMPC parameters --- #
+    n_samples           = SNMPC_params['n_samples'] # number of samples
+    gamma               = SNMPC_params['gamma']     # gamma is p in Eq.13 [1]: desired probability of constraints violation 
+    expansion_degree    = SNMPC_params['expansion_degree']
+    n_w                 = SNMPC_params['n_vars']    # n_w: total number of uncertain system params in Eq.3 [1]  
+    num_poly_terms      = int(np.math.factorial(n_w + expansion_degree) / (np.math.factorial(n_w) * np.math.factorial(expansion_degree)))
+    # num_poly_terms is L in Eq.3 [1]
 
-    # import prediction model
-    pred_model, constraints = pred_stm(veh_params_file, tire_params_file)
+    # load prediction model
+    pred_model, constraints = pred_stm(Ts, num_poly_terms,n_samples,veh_params_file, tire_params_file)
 
     # define acados ODE
     model               = AcadosModel()
-    model.f_expl_expr   = pred_model.xdot
+    model.disc_dyn_expr = pred_model.f_disc
     model.x             = pred_model.x
-    # model.xdot          = pred_model.xdot
     model.u             = pred_model.u
-    # model.z             = pred_model.z
-    # model.p             = pred_model.p
-    model.name          = 'NMPC'
+    model.p             = pred_model.p
+    model.name          = 'SNMPC'
     ocp.model           = model
 
     ocp.dims.N = N
-    unscale =1 # N / Tf
+    unscale = 1 # N / Tf
 
     x = ocp.model.x
     u = ocp.model.u
-    # adjust yaw to [0..2*pi]
-    # yaw = x[2]
-    yaw = mod(x[2], 2*pi)
-    yaw = if_else( yaw < 0,yaw + 2*pi , yaw) # adjust for negative angles
-    # compute absolute velocity for cost function (as reference velocity, model states give v_lon and v_lat)
-    # vel_abs = MX.sym("vel_abs")
-    # vel_abs = sqrt(x[3]**2 + x[4]**2)
-    vel_abs = x[3]
-    # cost function formulation
-    ocp.cost.cost_type      = "NONLINEAR_LS" # Cost type at intermediate shooting nodes (1 to N-1)
-    ocp.cost.cost_type_e    = "NONLINEAR_LS" # Cost type at terminal shooting node (N)
-    
-    ocp.model.cost_y_expr = vertcat(x[:2], yaw, vel_abs,  u) 
-    ocp.model.cost_y_expr_e = vertcat(x[:2], yaw, vel_abs)
+    p = ocp.model.p
 
     # cost function weights
     ocp.cost.W      = 0.01 * unscale * scipy.linalg.block_diag(Q, R)
     ocp.cost.W_e    = 0.01 * Qe / unscale
 
+    ## --- Core part of SNMPC --- 
+   
+    # x_nominal represent the mean value of n samples
+    x_nominal = x[0:8]
+    a_lon_nominal = x_nominal[7]
+    a_lat_nominal = x_nominal[3] * x_nominal[5]
+
+    # compute mean ax_max and mean ay_max at every single shooting node
+    vel_abs_nominal = sqrt(x_nominal[3]**2 + x_nominal[4] ** 2)
+    ay_max_nominal = ay_max_interpolant(vel_abs_nominal)
+    ax_max_nominal = ax_max_interpolant(vel_abs_nominal)
+    ax_max_nominal = if_else( a_lon_nominal < 0, -pred_model.acc_min, ax_max_nominal)
+    if combined_acc_limits == 0:
+        a_lon_limits_nominal = a_lon_nominal / ax_max_nominal
+        a_lat_limits_nominal = a_lat_nominal / ay_max_nominal
+    elif combined_acc_limits == 1:
+        acc_limits_ineq1_nominal = a_lon_nominal/ax_max_nominal + a_lat_nominal/ay_max_nominal
+        acc_limits_ineq2_nominal = a_lon_nominal/ax_max_nominal - a_lat_nominal/ay_max_nominal
+    else:
+        acc_lim_ineq_nominal = (a_lon_nominal/ax_max_nominal)**2 + (a_lat_nominal/ay_max_nominal)**2
+
+    # Weighting matrices initialization for close-form solution for l2-norm regression
+    if combined_acc_limits == 0:
+        a_lon_limits_ineq_simulation = MX(n_samples,1)
+        a_lat_limits_ineq_simulation = MX(n_samples,1)
+    elif combined_acc_limits == 1:
+        acc_limits_ineq1_simulation = MX(n_samples,1)
+        acc_limits_ineq2_simulation = MX(n_samples,1)
+    else:
+        acc_limits_ineq_simulation = MX(n_samples,1)
+
+    # collect values of nonlinear constraints from every samples
+    for i in range(1,n_samples+1):
+        x_current = x[8*i:8*i+8]
+        a_lon_current = x_current[7]
+        a_lat_current = x_current[3] * x_current[5]
+
+        # compute ax_max and ay_max at every single shooting node
+        vel_abs_current = sqrt(x_current[3]**2 + x_current[4] ** 2)
+        ay_max_current = ay_max_interpolant(vel_abs_current)
+        ax_max_current = ax_max_interpolant(vel_abs_current)
+        ax_max_current = if_else( a_lon_current < 0, -pred_model.acc_min, ax_max_current)
+        if combined_acc_limits == 0:
+            a_lon_limits_ineq = a_lon_current / ax_max_current
+            a_lat_limits_ineq = a_lat_current / ay_max_current
+            a_lon_limits_ineq_simulation[i-1] = a_lon_limits_ineq
+            a_lat_limits_ineq_simulation[i-1] = a_lat_limits_ineq
+        elif combined_acc_limits == 1:
+            acc_limits_ineq1 = a_lon_current / ax_max_current + a_lat_current / ay_max_current
+            acc_limits_ineq2 = a_lon_current / ax_max_current - a_lat_current / ay_max_current
+            acc_limits_ineq1_simulation[i-1] = acc_limits_ineq1
+            acc_limits_ineq2_simulation[i-1] = acc_limits_ineq2
+        else:
+            acc_limits_ineq = (a_lon_current/ax_max_current)**2 + (a_lat_current/ay_max_current)**2
+            # acc_limits_ineq_simulation = vertcat(acc_limits_ineq_simulation,acc_limits_ineq)
+            acc_limits_ineq_simulation[i-1] = acc_limits_ineq
+
+    # A represent the PCE matrix A in Eq.8 [1]
+    A = reshape(p[:-2],n_samples,num_poly_terms).T
+    
+    # Eq.8 [1] to calculate coeff_ineq
+    # Eq.15,16,17 [1] to calculate Expectation and Variance
+    if combined_acc_limits == 0:
+        coeff_ineq_lon = A @ a_lon_limits_ineq_simulation
+        coeff_ineq_lat = A @ a_lat_limits_ineq_simulation
+        mean_ineq_lon = coeff_ineq_lon[0]
+        mean_ineq_lat = coeff_ineq_lat[0]
+        var_ineq_lon = sum1(coeff_ineq_lon[1:]**2)
+        var_ineq_lat = sum1(coeff_ineq_lat[1:]**2)
+    elif combined_acc_limits == 1:
+        coeff_ineq_1 = A @ acc_limits_ineq1_simulation
+        coeff_ineq_2 = A @ acc_limits_ineq2_simulation
+        mean_ineq_1 = coeff_ineq_1[0]
+        mean_ineq_2 = coeff_ineq_2[0]
+        var_ineq_1 = sum1(coeff_ineq_1[1:]**2)
+        var_ineq_2 = sum1(coeff_ineq_2[1:]**2)
+    else:
+        coeff_ineq = A @ acc_limits_ineq_simulation
+        mean_ineq = coeff_ineq[0]
+        var_ineq = sum1(coeff_ineq[1:]**2)
+    
+    # adjust yaw to [0..2*pi]
+    yaw_mean = fmod(x_nominal[2], 2*pi)
+    yaw_mean = if_else( yaw_mean < 0,yaw_mean + 2*pi , yaw_mean) # adjust for negative angles
+    
+    ocp.cost.cost_type      = "NONLINEAR_LS" # Cost type at intermediate shooting nodes (1 to N-1)
+    ocp.cost.cost_type_e    = "NONLINEAR_LS" # Cost type at terminal shooting node (N)0101
+    ocp.model.cost_y_expr   = vertcat(x_nominal[0],x_nominal[1], yaw_mean, vel_abs_nominal,  u) 
+    ocp.model.cost_y_expr_e = vertcat(x_nominal[0],x_nominal[1], yaw_mean, vel_abs_nominal)
+
     # intial references
     ocp.cost.yref   = np.array([0, 0, 0, 0, 0, 0])
     ocp.cost.yref_e = np.array([0, 0, 0, 0])
 
-    # --- combined lateral and longitudinal acceleration constraints varying accroding to current velocity
-    # Source: Wischnewski, Alexander, et al. "A tube-MPC approach to autonomous multi-vehicle racing on high-speed ovals." IEEE Transactions on Intelligent Vehicles (2022).
-    # compute/extract acceleration constraints
-    a_lat       = MX.sym("a_lat")
-    a_lon       = MX.sym("a_lon")
-    acc_limits_ineq1 = MX.sym("acc_limits_ineq1")
-    acc_limits_ineq2 = MX.sym("acc_limits_ineq2")
-    # extract current acceleration limits based on velocity
-    a_lat       = x[3] * x[5] 
-    a_lon       = x[7]     
-    ay_max = ay_max_interpolant(vel_abs)
-    ax_max = ax_max_interpolant(vel_abs)
-    ax_max = if_else( a_lon < 0, -pred_model.acc_min, ax_max)  # ax limits are asymetric: >0 -> acceleration, <0: braking --> change the scaling factor for braking
-    constraints.a_lat = Function("a_lat", [x], [a_lat]) # define function for evaluation
-    # ay_max = constraints.lat_acc_max
-    # ax_max = pred_model.acc_max 
 
+    x_fun       = MX.sym('x_fun',8,1)
+    a_lat       = x_fun[3] * x_fun[5] 
+    constraints.a_lat = Function("a_lat", [x_fun], [a_lat]) # define function for evaluation
+
+    # all chance constraints are transformed to deterministic constraints based on Eq.13-14 [1]
     if combined_acc_limits == 0:
         # separated limits
-        a_lon_limits_ineq = a_lon/ax_max
-        a_lat_limits_ineq = a_lat/ay_max
+        a_lon_limits_ineq = if_else(p[-1] == 1, a_lon_limits_nominal, mean_ineq_lon + sqrt(var_ineq_lon) * sqrt((1 - gamma) / gamma))
+        a_lat_limits_ineq = if_else(p[-1] == 1, a_lat_limits_nominal, mean_ineq_lat + sqrt(var_ineq_lat) * sqrt((1 - gamma) / gamma))
         # constraints: nonlinear inequalities
         ocp.model.con_h_expr = vertcat(a_lon_limits_ineq, a_lat_limits_ineq)
         ocp.model.con_h_expr_e = vertcat(a_lon_limits_ineq, a_lat_limits_ineq)
@@ -92,8 +167,8 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
         ocp.constraints.uh_e    = np.array([1, 1])  # upper bound for nonlinear inequalities at terminal shooting node N
     elif combined_acc_limits == 1:
         # Diamond shaped combined lat lon acceleration limits
-        acc_limits_ineq1 = a_lon/ax_max + a_lat/ay_max
-        acc_limits_ineq2 = a_lon/ax_max - a_lat/ay_max
+        acc_limits_ineq1 = if_else(p[-1] == 1, acc_limits_ineq1_nominal, mean_ineq_1 + sqrt(var_ineq_1) * sqrt((1 - gamma) / gamma))
+        acc_limits_ineq2 = if_else(p[-1] == 1, acc_limits_ineq2_nominal, mean_ineq_2 + sqrt(var_ineq_2) * sqrt((1 - gamma) / gamma))
         # constraints: nonlinear inequalities
         ocp.model.con_h_expr = vertcat(acc_limits_ineq1, acc_limits_ineq2)
         ocp.model.con_h_expr_e = vertcat(acc_limits_ineq1, acc_limits_ineq2)
@@ -106,7 +181,7 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
         ocp.constraints.uh_e    = np.array([1, 1])  # upper bound for nonlinear inequalities at terminal shooting node N
     else:
         # Circle shaped combined lat lon acceleration limits
-        acc_limits_ineq = (a_lon/ax_max)**2 + (a_lat/ay_max)**2
+        acc_limits_ineq = if_else(p[-1] == 1 , acc_lim_ineq_nominal, mean_ineq + sqrt(var_ineq) * sqrt((1 - gamma) / gamma))
         # constraints: nonlinear inequalities
         ocp.model.con_h_expr = vertcat(acc_limits_ineq)
         ocp.model.con_h_expr_e = vertcat(acc_limits_ineq)
@@ -118,10 +193,18 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
         ocp.constraints.lh_e    = np.array([0])  # lower bound for nonlinear inequalities at terminal shooting node N
         ocp.constraints.uh_e    = np.array([1])  # upper bound for nonlinear inequalities at terminal shooting node N
 
-    # constraints.a_lon = Function("a_lon", [x], [a_lon])
+    # acc_limits_ineq = if_else(p[-1] == 1 , acc_lim_ineq_nominal, mean_ineq + sqrt(var_ineq) * sqrt((1 - gamma) / gamma))
+    # model.con_h_expr = vertcat(acc_limits_ineq)
+    # model.con_h_expr_e = vertcat(acc_limits_ineq)
 
-    # contraints (source reference: https://github.com/acados/acados/blob/master/docs/problem_formulation/problem_formulation_ocp_mex.pdf)
-    # linear constraints
+    # # nonlinear constraints
+    # # stage bounds for nonlinear inequalities
+    # ocp.constraints.lh      = np.array([0])  # lower bound for nonlinear inequalities at shooting nodes (0 to N-1)
+    # ocp.constraints.uh      = np.array([1])  # upper bound for nonlinear inequalities at shooting nodes (0 to N-1)
+    # # terminal bounds for nonlinear inequalities
+    # ocp.constraints.lh_e    = np.array([0])  # lower bound for nonlinear inequalities at terminal shooting node N
+    # ocp.constraints.uh_e    = np.array([1])  # upper bound for nonlinear inequalities at terminal shooting node N
+
     # stage bounds on x
     ocp.constraints.lbx     = np.array([pred_model.delta_f_min]) # lower bounds on x at intermediate shooting nodes (1 to N-1)
     ocp.constraints.ubx     = np.array([pred_model.delta_f_max]) # upper bounds on x at intermediate shooting nodes (1 to N-1)
@@ -130,19 +213,10 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
     ocp.constraints.lbx_e   = np.array([pred_model.delta_f_min])   # lower bounds on x at terminal shooting node N
     ocp.constraints.ubx_e   = np.array([pred_model.delta_f_max])   # upper bounds on x at terminal shooting node N
     ocp.constraints.idxbx_e = np.array([6])     # Indices for bounds on x at terminal shooting node N (defines Jebx)
-    # stage bounds on u 
-    # ocp.constraints.lbu     = np.array([pred_model.jerk_min, pred_model.delta_f_dot_min])
-    # ocp.constraints.ubu     = np.array([pred_model.jerk_max, pred_model.delta_f_dot_max])
-    # ocp.constraints.idxbu   = np.array([0, 1])
+
     ocp.constraints.lbu     = np.array([pred_model.delta_f_dot_min])
     ocp.constraints.ubu     = np.array([pred_model.delta_f_dot_max])
     ocp.constraints.idxbu   = np.array([1])
-
-    # ocp.constraints.lh      = np.array([constraints.lat_acc_min])  # lower bound for nonlinear inequalities at shooting nodes (0 to N-1)
-    # ocp.constraints.uh      = np.array([constraints.lat_acc_max])  # upper bound for nonlinear inequalities at shooting nodes (0 to N-1)
-    # # terminal bounds for nonlinear inequalities
-    # ocp.constraints.lh_e    = np.array([constraints.lat_acc_min])  # lower bound for nonlinear inequalities at terminal shooting node N
-    # ocp.constraints.uh_e    = np.array([constraints.lat_acc_max])  # upper bound for nonlinear inequalities at terminal shooting node N
 
     # soft constraints --> help the solver to find a solution (QP solver sometimes does not find a solution with hard constraints)
     # source: https://discourse.acados.org/t/infeasibility-issues-when-using-hard-nonlinear-constraints/1021 
@@ -213,7 +287,7 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
     # z_2 is the quadratic penalty for the slack variables in the terminal cost function
     z_2_e = np.ones((nh_e + 1,)) * L2_pen
 
-    # Add the penalty to the cost function
+    # Add the penalty to the cost function  
     # Quadratic penalty to when the constraint is violated in lower bound in the terminal cost
     ocp.cost.Zl_e = z_2_e
     # Quadratic penalty to when the constraint is violated in upper bound in the terminal cost
@@ -230,19 +304,21 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
     ocp.solver_options.tf = Tf
     ocp.solver_options.qp_solver = "FULL_CONDENSING_HPIPM"
     ocp.solver_options.qp_solver_iter_max = 50 #  Default: 50
-    # ocp.solver_options.qp_solver_warm_start = 1
+    ocp.solver_options.qp_solver_warm_start = 1
     ocp.solver_options.nlp_solver_type = "SQP_RTI"
-    # ocp.solver_options.nlp_solver_max_iter = 150
+    # ocp.solver_options.nlp_solver_max_iter = 300
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
     # ocp.solver_options.regularize_method = 'CONVEXIFY'
-    ocp.solver_options.integrator_type = "ERK"
+    ocp.solver_options.integrator_type = "DISCRETE"
     ocp.solver_options.sim_method_num_stages = 4        # Runge-Kutta int. stages: (1) RK1, (2) RK2, (4) RK4
     ocp.solver_options.sim_method_num_steps = 3
 
+    ocp.parameter_values = np.ones((num_poly_terms*(n_samples)+2))
     # create solver
-    acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_NMPC.json", generate=solver_generate_C_code, build=solver_build)#, verbose=False)
+    acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_SNMPC.json", generate = solver_generate_C_code, build=solver_build)
+    # acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp_test.json",generate=False,build=False)
 
-    return constraints, pred_model, acados_solver, ocp
+    return constraints, pred_model, acados_solver,ocp
 
 
 
