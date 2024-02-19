@@ -1,0 +1,25 @@
+## vehicle params 
+l: 3.128  # wheelbase [m]
+lf: 1.484   # distance from spring mass center of gravity to front axle [m]  
+lr: 1.644   # distance from spring mass center of gravity to rear axle [m]  
+m: 2520     # vehicle mass [kg]  MASS
+Iz: 13600  # TBD moment of inertia for sprung mass in yaw [kg m^2]  IZZ
+h: 0.275    # TBD center of gravity above ground [m]  HS
+ro: 1.225          # air density 
+S: 2.9             # TBD frontal area
+Cd: 0.35        # TBD drag coeff
+veh_length: 4.973 # outer vehicle dimensions
+veh_width: 1.941 # outer vehicle dimensions
+veh_height: 2.320    # outer vehicle dimensions
+
+# constraints
+jerk_min: -8    # TBD [m/s³]  need to be validated
+jerk_max: 6     # TBD [m/s³]
+lat_acc_min: -5.886  # [m/s²] in High-Dynamic Mode                             
+lat_acc_max: 5.886   # [m/s²] in High-Dynamic Mode                                
+acc_min: -3.5 
+acc_max: 2.5                                                 
+delta_f_min: -0.610865     # steering angle [rad]
+delta_f_max: 0.610865      # steering angle [rad]
+delta_f_dot_min: -0.322  # TBD steering angular velocity [rad/s]
+delta_f_dot_max: 0.322   # TBD steering angular velocity [rad/s]

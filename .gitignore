@@ -1,0 +1,6 @@
+acados_ocp_test.json
+c_generated_code/
+.vscode/
+***/__pycache__
+Logs/
+acados_ocp_NMPC.json

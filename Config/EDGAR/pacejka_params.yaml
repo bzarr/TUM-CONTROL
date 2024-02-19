@@ -1,0 +1,12 @@
+tire_params:
+  front:
+    Bf: 10  # stiffness factor
+    Cf: 1.3    # shape factor
+    Df: 15591.427 # peak value
+    Ef: 0.97   # curvature factor
+  rear:
+    Br: 10  # stiffness factor
+    Cr: 1.6    # shape factor
+    Dr: 24629.523 # peak value
+    Er: 0.97   # curvature factor
+mu: 1.0489 #Lateral friction Muy
