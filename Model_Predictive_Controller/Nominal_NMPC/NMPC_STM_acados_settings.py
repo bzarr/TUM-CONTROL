@@ -7,7 +7,7 @@ from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
 from Prediction_Models.pred_model_dynamic_stm_pacejka import pred_stm
 import scipy.linalg
 import numpy as np
-from casadi import vertcat, sqrt, mod, pi, if_else, MX, interp1d, Function
+from casadi import vertcat, sqrt, fmod, pi, if_else, MX, interp1d, Function
 
 """
 Source: [1] Zarrouki, Baha, Chenyang Wang, and Johannes Betz. "A stochastic nonlinear model predictive control with an uncertainty propagation horizon for autonomous vehicle motion control." arXiv preprint arXiv:2310.18753 (2023).
@@ -38,7 +38,7 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
     u = ocp.model.u
     # adjust yaw to [0..2*pi]
     # yaw = x[2]
-    yaw = mod(x[2], 2*pi)
+    yaw = fmod(x[2], 2*pi)
     yaw = if_else( yaw < 0,yaw + 2*pi , yaw) # adjust for negative angles
     # compute absolute velocity for cost function (as reference velocity, model states give v_lon and v_lat)
     # vel_abs = MX.sym("vel_abs")

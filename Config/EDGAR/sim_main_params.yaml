@@ -1,58 +1,55 @@
+simMode: 0
+    # 0 -> CiL (MPC + simulation model: separate dynamics model)     
+    # 1 -> MPC Sim (MPC + simulation model: MPC predictions)
 
-
-# reference trajectory and track
-# track_file    : "track_grand_campus_novatel.json"
-# ref_traj_file : "reftraj_grand_campus_novatel.json"
+# --- Reference trajectory and track
 trajectory_path : "Trajectories/"
-track_file    : "track_monteblanco.json" #"track_big_round_campus_novatel.json"
+track_file    : "track_monteblanco.json" 
 ref_traj_file : "reftraj_monteblanco_edgar.json" 
-# start index on the trajectory
-idx_ref_start: 0  # 660, 720, 1190, 400, 520, 210, 420, 390
+idx_ref_start: 0  # start index on the trajectory
+ref_trajectory_type: 0
+    # 0: smooth continuous reference trajectory
+    # 1: discrete set of trajectories
 
-# vehicle params
+# --- Vehicle params: you can simulate a mismatch
 veh_params_file_simulator  : "EDGAR/veh_params_sim.yaml"
 tire_params_file_simulator : "EDGAR/pacejka_params.yaml"
 veh_params_file_MPC  : "EDGAR/veh_params_pred.yaml"
 tire_params_file_MPC : "EDGAR/pacejka_params.yaml"
 
-# general sim params
+# --- Visualization general params
 live_visualization: 2
     # 0 -> no Live Visualization
     # 1 -> live: (x,y) evolution only
     # 2 -> live: (x,y) evolution + lat dev + velocity + gg diag
-live_plot_freq: 10
+live_plot_freq: 10      # how many frames to skip in live visualization 
+# live plot figure size
+xwidth: 100 # plot x limits relative to the track [m]
+ywidth: 100 # plot y limits relative to the track [m]
 
-simMode: 0
-    # 0 -> CiL (MPC + simulation model: separate dynamics model)     
-    # 1 -> MPC Sim (MPC + simulation model: MPC predictions)
+# --- GIF generation: caution: this makes simulation slow
+GIF_animation_generation: False # GIF is saved only when live_visualization != 0
+GIF_file_name           : 'SNMPC_Fdist_Monteblanco_EDGAR.gif'
 
+# --- Logs
 save_logs: True
-file_logs_name : 'NMPC_trial'
+file_logs_name : 'SNMPC_trial'
 
 # --- Time params
 Ts    : 0.02    # simulator discretization time [s]
-T     : 110.00  # maximum simulation time [s]
+T     : 100.00  # maximum simulation time [s]
 Tp    : 3.04    # prediction horizon [s]
 Ts_MPC: 0.08    # MPC prediction discretization step [s]
 
-# state estimation 
-simulate_state_estimation: False
+# --- General disturbance params
+disturbance_playback    : False          
+    # False: generate new disturbance realization 
+    # True: playback a disturbance realization from an old log file
+playback_log_file       : 'NMPC_dist2023-10-15_17-37-54/full_logs.npz' # NMPC_dist2023-10-15_17-37-54
 
-# --- disturbance params
-simulate_disturbances               : False
-disturbance_type_derivatives        : 'uniform'     # 'uniform' or 'gaussian' or 'absolute'
-disturbance_type_state_estimation   : 'uniform'     # 'uniform' or 'gaussian' or 'absolute'
-disturbance_playback                : False          # playback a disturbance realization from an old log file
-playback_log_file                   : 'NMPC_dist2023-10-15_17-37-54/full_logs.npz' # NMPC_dist2023-10-15_17-37-54
-# magnitude of disturbances on the vehicle state derivatives
-w_posx_dot    : 0.8
-w_posy_dot    : 0.8
-w_yaw_dot     : 0.1
-w_vlong_dot   : 1.1
-w_vlat_dot    : 0.1
-w_yawrate_dot : 0.05
-w_delta_f_dot : 0.1
-
+# --- state estimation disturbances
+simulate_state_estimation           : False
+disturbance_type_state_estimation   : 'gaussian'     # 'uniform' or 'gaussian' or 'absolute'
 # standard deviation of state estimation noise/error
 w_posx    : 0.15
 w_posy    : 0.15
@@ -69,12 +66,14 @@ w_delta_f : 0.005
 # w_yawrate : 0.035
 # w_delta_f : 0.01
 
-
-# live plot figure size
-xwidth: 100 # plot x limits relative to the track [m]
-ywidth: 100 # plot y limits relative to the track [m]
-GIF_animation_generation: False
-GIF_file_name: 'SNMPC_Fnodist_GrandCampus_EDGAR.gif'
-ref_trajectory_type: 0
-    # 0: smooth continuous reference trajectory
-    # 1: discrete set of trajectories
+# --- state derivative general additive disturbances
+simulate_disturbances           : False         # simulate state derivative additive disturbances
+disturbance_type_derivatives    : 'uniform'     # 'uniform' or 'gaussian' or 'absolute'
+# magnitude of disturbances on the vehicle state derivatives
+w_posx_dot    : 0.8
+w_posy_dot    : 0.8
+w_yaw_dot     : 0.1
+w_vlong_dot   : 1.1
+w_vlat_dot    : 0.1
+w_yawrate_dot : 0.05
+w_delta_f_dot : 0.1

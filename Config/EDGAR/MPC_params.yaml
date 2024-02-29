@@ -2,10 +2,11 @@ costfunction_type: 'NONLINEAR_LS' # 'NONLINEAR_LS' or 'EXTERNAL'
 solver_build: True
 solver_generate_C_code: True
 
-enable_WMPC: False           # must be disabled for WMPC training
+enable_WMPC: False           # Weights-varying MPC (COMING-SOON) CAUTION: must be disabled for WMPC training
 WMPC_model: 'Python/TUM_Learning_To_Adapt/Safe_WMPC/_models/new_BO_F'
 weights_update_period: 20   # number of MPC steps to run between weight updates
 
+## Static cost function parameters optimized with Multiobjective Bayesian Optimization
 s_lon           : 1
 s_lat           : 1
 s_yaw           : 1
@@ -13,7 +14,6 @@ s_vel           : 1
 s_jerk          : 1
 s_steering_rate : 1
 
-## Parameters optimized with Bayesian Optimization by Marios Spanakakis
 q_lon           : 2.8
 q_lat           : 2.8
 q_yaw           : 0.4
@@ -23,23 +23,24 @@ r_steering_rate : 101.4
 L1_pen          : 106.7
 L2_pen          : 9.9
 
+# --- constraints params
 lookuptable_gg_limits: 'EDGAR/ggv.csv'
 combined_acc_limits: 2
   # 0: no combined limits (separate limits)
   # 1: Diamond shaped combined lat lon acceleration limits
   # 2: Circle shaped combined lat lon acceleration limits
 
-## --- RNMPC & SNMPC specific parameters for PCE ---
-stds:
+## --- RNMPC & SNMPC specific parameters for Polynomial Chaos Expansion (PCE) ---
+stds:   # assumed disturbance ranges
  - 0.0   # w_pos_x
  - 0.0   # w_pos_y
  - 0.0   # w_yaw
- - 1.1   # w_vlong
- - 0.2   # w_vlat 
- - 0.05  # w_yawrate 
+ - 0.8   # w_vlong
+ - 0.35   # w_vlat 
+ - 0.035  # w_yawrate 
  - 0.0   # w_delta_f
  - 0.0   # w_a
-uncertainty_propagation_horizon: 38
+uncertainty_propagation_horizon: 5
 
 ## --- SNMPC specific parameters for PCE ---
 n_samples: 10  # number of collocation points

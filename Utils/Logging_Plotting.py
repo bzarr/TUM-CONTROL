@@ -289,7 +289,7 @@ class Logger:
         state_estimation_sim    = sim_main_params['simulate_state_estimation']
 
         # Plot results
-        plotTrackSim(self.track, SimX_x = self.CiLX[1:,0], SimX_y = self.CiLX[1:,1], SimX_vel= vel[1:], dev_lat= dev_lat, save_logs=save_logs, log_file_ID= file_logs_name)
+        # plotTrackSim(self.track, SimX_x = self.CiLX[1:,0], SimX_y = self.CiLX[1:,1], SimX_vel= vel[1:], dev_lat= dev_lat, save_logs=save_logs, log_file_ID= file_logs_name)
         plotRes(self.CiLX[1:,:],self.simREF, self.MPC_SimX[1:,:], dev_lat, dev_long, a_lat_pred[1:], a_lat_sim[1:], MPC_model,MPC_constraints,self.ax_lim, self.ay_lim,MPC_acceleration= self.MPC_SimX[1:,7], MPC_steering_angle= self.MPC_SimX[1:,6], MPC_jerk= self.simU[:,0], MPC_steering_rate=self.simU[:,1], t=t, save_logs=save_logs, log_file_ID= file_logs_name)
         BoxPlots(dev_vel, dev_yaw, dev_lat, save_logs=save_logs, log_file_ID= file_logs_name)
         plotMPCperf(self.simSolverDebug, t, self.track, SimX_x = self.CiLX[1:,0], SimX_y = self.CiLX[1:,1], save_logs=save_logs, log_file_ID= file_logs_name)

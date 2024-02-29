@@ -42,7 +42,7 @@ class Nonlinear_Model_Predictive_Controller:
         ):
         ## --- MPC cost function params ---
         with open(config_path + MPC_params_file, 'r') as file:
-            self.MPC_params = yaml.load(file, Loader=yaml.FullLoader)
+            self.MPC_params = yaml.load(file, Loader = yaml.FullLoader)
         self.Tp      = sim_main_params['Tp']     # prediction horizon [s]
         self.Ts      = sim_main_params['Ts']
         self.Ts_MPC  = sim_main_params['Ts_MPC'] # MPC prediction discretization step [s]
@@ -158,6 +158,7 @@ class Nonlinear_Model_Predictive_Controller:
         #     self.steps_since_weight_update = 0
         #     self.weight_update_period = self.MPC_params['weights_update_period']
         #     self.current_action = None
+        return
 
     def solve(
             self,
