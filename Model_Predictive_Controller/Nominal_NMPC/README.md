@@ -1,5 +1,5 @@
 ## Problem Formulation
-$$
+$
 \begin{aligned}
 & \textbf{Problem 1} && \textbf{Nominal NMPC}\\ 
 % &&& \textbf{problem}\\
@@ -22,7 +22,8 @@ $$
 & & & \underline{\boldsymbol{h}}^{\mathrm{e}} \leq h^{\mathrm{e}}(\boldsymbol{x}(T_p)) \leq \bar{\boldsymbol{h}}^{\mathrm{e}}, \\
 & & & \underline{\boldsymbol{x}}^{\mathrm{e}} \leq J_{\mathrm{bx}}^{\mathrm{e}} \space \boldsymbol{x}(T_p) \leq \bar{\boldsymbol{x}}^{\mathrm{e}}, \\
 \end{aligned}
-$$
+$
+
 Here, $\boldsymbol{x} \in \mathbb{R}^{n_x}$ denotes the state vector, $\boldsymbol{u} \in \mathbb{R}^{n_u}$ the control vector, $t$ the discrete time, $T_p$ the prediction horizon, $f$ the system dynamics, $h$ and $h^e$ the path and terminal nonlinear inequality constraints, $J_{bx}$ and $J_{bx}^e$ help express linear path and terminal state constraints, $J_{bu}$ helps express control input constraints and $x_0$ the initial state.
 Also, $l: \mathbb{R}^{n_{\mathrm{x}}} \times \mathbb{R}^{n_{\mathrm{u}}}  \rightarrow \mathbb{R}$ denotes the stage cost and $m: \mathbb{R}^{n_{\mathrm{x}}}  \rightarrow \mathbb{R}$ the terminal cost.
 
