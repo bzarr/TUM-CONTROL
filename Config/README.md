@@ -19,5 +19,3 @@ Simulation parameters are in Config/sim_main_params.yaml
     + simMode = 0 (CiL) 
         - preprocess control input/optimal state
         - call Simulator step method
-
-## Generate 

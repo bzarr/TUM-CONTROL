@@ -16,10 +16,13 @@ The TUM Motion Control simulation framework includes the following base NMPC mot
 
 SNMPC in action on Monteblaco Racetrack:
 
-<video width="640" height="360" controls autoplay>
-  <source src="Utils/SNMPC_Monteblanco.mp4#t=1" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<p align="center">
+<img
+  src="Utils/SNMPC_Monteblanco.gif"
+  alt=""
+  title="Simulation output example"
+  style="margin: 0 auto; max-width: 300px">
+</p>
 
 Each NMPC has the following characteristics:
 - Combined lateral- & longitudinal motion control for trajectory following​
