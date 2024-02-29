@@ -38,14 +38,14 @@ $\begin{equation}
 Moreover, we employ two slack variables, $L1$ for a linear- and $L2$ for a quadratic constraint violation penalization term, relaxing the constraints and helping the solver find a solution.
 
 To determine appropriate matrices $Q$ and $Q_e$ and $R$, we employ Multi-Objective Bayesian Optimization:
-$
+$$
     Q = Q_e =  \text{diag} ( 
         2.8, \space 
         2.8, \space 
         0.4, \space 
         0.2
     )
-$
+
 and 
 $
     R= \text{diag} ( 
@@ -56,9 +56,9 @@ $.
 
 ## Constraints
 We formulate the combined longitudinal and lateral acceleration potential limits for the SNMPC (Problem 2) as a nonlinear probabilistic constraint using Eq.\ref{eq:deceleration constraints} and for the nominal NMPC (Problem 1) as a nonlinear hard constraint: 
-$\begin{equation}
+$$\begin{equation}
     h(\boldsymbol{x}, \boldsymbol{u}) = (a_\text{lon}/a_{x_\text{max}})^2 + (a_\text{lat}/a_{y_\text{max}})^2
-\end{equation}$
+\end{equation}
 
 Here, the longitudinal acceleration is $a_\text{lon} = a$, and the lateral acceleration is $a_\text{lat} = v_\text{lon} \dot{\psi}$. The upper and lower bounds for $h$ are $\bar{h} = 1$ and $\underline{h} = 0$. We adapt the maximum allowed values based on the limits defined by the vehicle's actuator interface software. Specifically, we set $a_{y_\text{max}} = 5.866 m/s², while $a_{x_\text{max}}$ varies based on the current velocity. When decelerating, $a_{x_\text{max}}$ is defined as:
 $\begin{equation}
