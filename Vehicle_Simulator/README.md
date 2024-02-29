@@ -10,17 +10,17 @@ $[a,  \omega_f ]$, where
 
 ## States
 We define the vehicle state vector as follows:
-$\begin{equation}
+$$
 \begin{aligned}
 \boldsymbol{x} &= [x_{\text{pos}},\space y_{\text{pos}},\space \psi,\space v_{\text{lon}},\space v_{\text{lat}},\space \dot{\psi},\space \delta_f]^T
 \end{aligned}
-\end{equation}$
+$$
 Here, $x_{\text{pos}}$ and $y_{\text{pos}}$ represent the x- and y-coordinates of the ego vehicle, $\psi$ is the yaw angle, $v_{\text{lon}}$ and $v_{\text{lat}}$ indicate velocities in the longitudinal and lateral directions, $\dot{\psi}$ represents the yaw rate, $\delta_f$ corresponds to the steering angle at the front wheel, and $a$ signifies acceleration. 
 The control vector is defined as $u = [a, \space \omega_f ]^T$, where $a$ represents the longitudinal acceleration, and $\omega_f$ represents the steering rate at the front wheel.
 
 ## Differential equations:
 We adopt a dynamic nonlinear single-track model combined with Pacejka Magic Formula \cite{pacejka1997magic} to account for essential dynamic effects. The system dynamics are defined as: 
-$\begin{equation}
+$$
 f(\boldsymbol{x},\boldsymbol{u}) =
 \begin{aligned}
 \begin{bmatrix}
@@ -33,42 +33,42 @@ v_\text{lon} \sin(\psi) + v_\text{lat} \cos(\psi) \space \\
 \omega_f 
 \end{bmatrix} 
 \end{aligned}
-\end{equation}$
+$$
 
 For the lateral forces $Fy_{\{f,r\}}$, we account for the combined slip of lateral and longitudinal dynamics as in [5], where ${{f,r}}$ refers to the front or rear tires. 
 
-$\begin{equation}
+$$
 \begin{aligned}
 Fy_{\{f,r\}} &= F_{{\{f,r\},\text{tire}}} \cos\left(\arcsin\left(F_{x_{\{f,r\}}}/F_{\text{max}_{\{f,r\}}}\right)\right)
 \end{aligned}
-\end{equation}$
+$$
 
 To avoid singularity problems, we clip $F_{x_{\{f,r\}}}/F_{\text{max}_{\{f,r\}}}$ at 0.98 as in [5]. 
 The lateral front and rear tire forces are defined using the reduced Pacejka magic formula \cite{pacejka1997magic}: 
-$\begin{equation}
+$$
 \begin{aligned}
 F_{{\{f,r\},\text{tire}}} &= D_{\{f,r\}} \sin(C_{\{f,r\}} \arctan(B_{\{f,r\}} \alpha_{\{f,r\}} \\
 &- E_{\{f,r\}} (B_{\{f,r\}} \alpha_{\{f,r\}}- \arctan(B_{\{f,r\}} \alpha_{\{f,r\}}))))
 \end{aligned}
-\end{equation}$
+$$
 The side slip angles are defined as follows: 
-$\begin{equation}
+$$
 \begin{aligned}
 \alpha_f &= 
 \delta_f - \arctan\left((v_\text{lat}+l_f \cdot \dot{\psi})/v_\text{lon}\right)  \\
 \alpha_r &= 
 \arctan\left((l_r \cdot \dot{\psi} - v_\text{lat}) /v_\text{lon}\right)
 \end{aligned}
-\end{equation}$
+$$
 The tire sideslip angle formula has a singularity issue with longitudinal velocity \cite{smith1995effects}. To address this, we assume that the tire sideslip angle is negligible at low velocities, avoiding the need for two different models.
 
 The longitudinal forces are defined as following:
-$\begin{equation}
+$$
 \begin{aligned} 
 Fx_f &= - Fr_f \\
 Fx_r &= F_d  - Fr_r  - F_\text{aero}\\
 \end{aligned}
-\end{equation}$
+$$
 Here, the driving force at the wheel is defined as $ F_d = m \cdot a$ and the rolling resistance forces [2] are defined as
 $Fr_{\{f,r\}} = fr \cdot F_{z,{\{f,r\}}}$. The rolling constant $f_r$ is defined as $fr = fr_0 + fr_1 \cdot \frac{v}{100} + fr_4 \cdot \left(\frac{v}{100}\right)^4$, where $v$ represents the absolute velocity in km/h [2].
 The aerodynamic force is calculated as $F_\text{aero} = 0.5\cdot \rho \cdot S \cdot Cd \cdot v_\text{lon}^2 $ [2] and $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles $F_{z,{\{f,r\}}} = \frac{m \cdot g \cdot l_{\{r,f\}}}{l_f + l_r}$. 

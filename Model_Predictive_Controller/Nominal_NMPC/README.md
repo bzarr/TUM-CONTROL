@@ -1,5 +1,5 @@
 ## Problem Formulation
-$\begin{equation}
+$$
 \begin{aligned}
 & \textbf{Problem 1} && \textbf{Nominal NMPC}\\ 
 % &&& \textbf{problem}\\
@@ -22,19 +22,19 @@ $\begin{equation}
 & & & \underline{\boldsymbol{h}}^{\mathrm{e}} \leq h^{\mathrm{e}}(\boldsymbol{x}(T_p)) \leq \bar{\boldsymbol{h}}^{\mathrm{e}}, \\
 & & & \underline{\boldsymbol{x}}^{\mathrm{e}} \leq J_{\mathrm{bx}}^{\mathrm{e}} \space \boldsymbol{x}(T_p) \leq \bar{\boldsymbol{x}}^{\mathrm{e}}, \\
 \end{aligned}
-\end{equation}$
+$$
 Here, $\boldsymbol{x} \in \mathbb{R}^{n_x}$ denotes the state vector, $\boldsymbol{u} \in \mathbb{R}^{n_u}$ the control vector, $t$ the discrete time, $T_p$ the prediction horizon, $f$ the system dynamics, $h$ and $h^e$ the path and terminal nonlinear inequality constraints, $J_{bx}$ and $J_{bx}^e$ help express linear path and terminal state constraints, $J_{bu}$ helps express control input constraints and $x_0$ the initial state.
 Also, $l: \mathbb{R}^{n_{\mathrm{x}}} \times \mathbb{R}^{n_{\mathrm{u}}}  \rightarrow \mathbb{R}$ denotes the stage cost and $m: \mathbb{R}^{n_{\mathrm{x}}}  \rightarrow \mathbb{R}$ the terminal cost.
 
 ## Cost function
 The stage cost is defined as a nonlinear least square function: $l(\boldsymbol{x}, \boldsymbol{u})=\frac{1}{2}\|\boldsymbol{y}(\boldsymbol{x},\boldsymbol{u})-\boldsymbol{y}_{\mathrm{ref}}\|_W^2$. Similarly, the terminal cost is formulated as $m(\boldsymbol{x})=\frac{1}{2}\|\boldsymbol{y}^e(\boldsymbol{x})-\boldsymbol{y}^e_{\mathrm{ref}}\|_{W^e}^2$. Here, $W$ and $W_e$ represent the weighting matrices for the stage and terminal costs, respectively. $W$ is computed as $W = \text{diag}(Q,R)$, where $Q$ and $R$ are matrices for states and inputs weighting, while $W_e$ is defined as $W_e = Q_e$. The cost terms are defined as follows: 
-$\begin{equation}
+$$
   \begin{aligned}
 \boldsymbol{y}(\boldsymbol{x},\boldsymbol{u}) &= [x_{\text{pos}},\space y_{\text{pos}},\space \psi,\space v_{\text{lon}},\space  j, \space \omega_f] \\
 \boldsymbol{y}_{\text{ref}} &= [x_{\text{pos,ref}},\space y_{\text{pos,ref}},\space \psi_{\text{ref}},\space v_{\text{ref}},\space  0,\space 0] \\
 \boldsymbol{y}^e_{\text{ref}} &= [x_{\text{pos,ref}}^e,\space y_{\text{pos,ref}}^e,\space \psi^e_{\text{ref}},\space v^e_{\text{ref}}]\\
 \end{aligned}  
-\end{equation}$
+$$
 Moreover, we employ two slack variables, $L1$ for a linear- and $L2$ for a quadratic constraint violation penalization term, relaxing the constraints and helping the solver find a solution.
 
 To determine appropriate matrices $Q$ and $Q_e$ and $R$, we employ Multi-Objective Bayesian Optimization:
@@ -45,23 +45,24 @@ $$
         0.4, \space 
         0.2
     )
+$$
 
 and 
-$
+$$
     R= \text{diag} ( 
         38.1, \space 
         101.4
     )
-$.
+$$.
 
 ## Constraints
 We formulate the combined longitudinal and lateral acceleration potential limits for the SNMPC (Problem 2) as a nonlinear probabilistic constraint using Eq.\ref{eq:deceleration constraints} and for the nominal NMPC (Problem 1) as a nonlinear hard constraint: 
-$$\begin{equation}
+$$
     h(\boldsymbol{x}, \boldsymbol{u}) = (a_\text{lon}/a_{x_\text{max}})^2 + (a_\text{lat}/a_{y_\text{max}})^2
-\end{equation}
+$$
 
 Here, the longitudinal acceleration is $a_\text{lon} = a$, and the lateral acceleration is $a_\text{lat} = v_\text{lon} \dot{\psi}$. The upper and lower bounds for $h$ are $\bar{h} = 1$ and $\underline{h} = 0$. We adapt the maximum allowed values based on the limits defined by the vehicle's actuator interface software. Specifically, we set $a_{y_\text{max}} = 5.866 m/s², while $a_{x_\text{max}}$ varies based on the current velocity. When decelerating, $a_{x_\text{max}}$ is defined as:
-$\begin{equation}
+$$
 \begin{aligned}
 a_{x_\text{max}} = 
 \begin{cases}
@@ -69,9 +70,9 @@ a_{x_\text{max}} =
      |-3.5m/s²|,  &\text{if } 11 m/s < v_\text{lon} \leq 37.5 m/s
 \end{cases}
 \end{aligned}
-\end{equation}$
+$$
 And during acceleration:
-$\begin{equation}
+$$
 \begin{aligned}
 a_{x_\text{max}} = 
 \begin{cases}
@@ -79,14 +80,14 @@ a_{x_\text{max}} =
      2.5m/s², & \text{if } 11 m/s < v_\text{lon} \leq 37.5 m/s
 \end{cases}
 \end{aligned}
-\end{equation}$
+$$
 Additionally, we impose linear hard constraints on the steering angle and steering rate at the front wheel:
 
-$\begin{equation}
+$$
 \begin{aligned}
 -0.61 rad\leq & \mathbb{E}[\delta_f] \leq 0.61rad \\
 -0.322rad/s\leq &\omega_f \leq 0.322rad/s
 \end{aligned}
-\end{equation}$
+$$
 ## Bibliography
 [1] Zarrouki, B., Wang, C., & Betz, J. (2023). A Stochastic Nonlinear Model Predictive Control with an Uncertainty Propagation Horizon for Autonomous Vehicle Motion Control. arXiv preprint arXiv:2310.18753. http://arxiv.org/abs/2310.18753
