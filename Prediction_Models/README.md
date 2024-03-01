@@ -11,16 +11,19 @@ $[j,  \omega_f ]$, where
 
 ## States
 We define the vehicle state vector as follows:
+
 $$
 \begin{aligned}
 \boldsymbol{x} &= [x_{\text{pos}},\space y_{\text{pos}},\space \psi,\space v_{\text{lon}},\space v_{\text{lat}},\space \dot{\psi},\space \delta_f,\space a]^T
 \end{aligned}
 $$
+
 Here, $x_{\text{pos}}$ and $y_{\text{pos}}$ represent the x- and y-coordinates of the ego vehicle, $\psi$ is the yaw angle, $v_{\text{lon}}$ and $v_{\text{lat}}$ indicate velocities in the longitudinal and lateral directions, $\dot{\psi}$ represents the yaw rate, $\delta_f$ corresponds to the steering angle at the front wheel, and $a$ signifies acceleration. 
 The control vector is defined as $u = [j, \space \omega_f ]^T$, where $j$ represents the longitudinal jerk, and $\omega_f$ represents the steering rate at the front wheel.
 
 ## Differential equations:
-We adopt a dynamic nonlinear single-track model combined with Pacejka Magic Formula \cite{pacejka1997magic} to account for essential dynamic effects. The system dynamics are defined as: 
+We adopt a dynamic nonlinear single-track model combined with Pacejka Magic Formula to account for essential dynamic effects. The system dynamics are defined as: 
+
 $$
 f(\boldsymbol{x},\boldsymbol{u}) =
 \begin{aligned}
@@ -46,14 +49,17 @@ Fy_{\{f,r\}} &= F_{{\{f,r\},\text{tire}}} \cos\left(\arcsin\left(F_{x_{\{f,r\}}}
 $$
 
 To avoid singularity problems, we clip $F_{x_{\{f,r\}}}/F_{\text{max}_{\{f,r\}}}$ at 0.98 as in [5]. 
-The lateral front and rear tire forces are defined using the reduced Pacejka magic formula \cite{pacejka1997magic}: 
+The lateral front and rear tire forces are defined using the reduced Pacejka magic formula: 
+
 $$
 \begin{aligned}
 F_{{\{f,r\},\text{tire}}} &= D_{\{f,r\}} \sin(C_{\{f,r\}} \arctan(B_{\{f,r\}} \alpha_{\{f,r\}} \\
 &- E_{\{f,r\}} (B_{\{f,r\}} \alpha_{\{f,r\}}- \arctan(B_{\{f,r\}} \alpha_{\{f,r\}}))))
 \end{aligned}
 $$
+
 The side slip angles are defined as follows: 
+
 $$
 \begin{aligned}
 \alpha_f &= 
@@ -62,15 +68,18 @@ $$
 \arctan\left((l_r \cdot \dot{\psi} - v_\text{lat}) /v_\text{lon}\right)
 \end{aligned}
 $$
-The tire sideslip angle formula has a singularity issue with longitudinal velocity \cite{smith1995effects}. To address this, we assume that the tire sideslip angle is negligible at low velocities, avoiding the need for two different models.
+
+The tire sideslip angle formula has a singularity issue with longitudinal velocity. To address this, we assume that the tire sideslip angle is negligible at low velocities, avoiding the need for two different models.
 
 The longitudinal forces are defined as following:
+
 $$
 \begin{aligned} 
 Fx_f &= - Fr_f \\
 Fx_r &= F_d  - Fr_r  - F_\text{aero}\\
 \end{aligned}
 $$
+
 Here, the driving force at the wheel is defined as $ F_d = m \cdot a$ and the rolling resistance forces [2] are defined as
 $Fr_{\{f,r\}} = fr \cdot F_{z,{\{f,r\}}}$. The rolling constant $f_r$ is defined as $fr = fr_0 + fr_1 \cdot \frac{v}{100} + fr_4 \cdot \left(\frac{v}{100}\right)^4$, where $v$ represents the absolute velocity in km/h [2].
 The aerodynamic force is calculated as $F_\text{aero} = 0.5\cdot \rho \cdot S \cdot Cd \cdot v_\text{lon}^2 $ [2] and $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles $F_{z,{\{f,r\}}} = \frac{m \cdot g \cdot l_{\{r,f\}}}{l_f + l_r}$. 
@@ -90,22 +99,22 @@ To cover both low- and high-velocity ranges, we conduct tests at velocities from
 | $l_{\mathrm{r}}$ | 1.644 | m               | Rear axle to center of gravity        |
 | $m$            | 2520  | kg            | Vehicle mass                          |
 | $I_{\mathrm{z}}$ | 13600 | kg.m² | Moment of inertia in yaw          |
-| $\rho$         | 1.225 | kg.$m^{-3}$ | Air density                      |
+| $\rho$         | 1.225 | $kg.m^{-3}$ | Air density                      |
 | $A$            | 2.9   | m²       | Cross-sectional frontal area          |
 | $c_{\mathrm{d}}$ | 0.35  |                     | Drag coefficient                      |
 
 
 
 Our goal is to estimate the single track model parameters that minimize the deviation between a series of true measured states $\boldsymbol{X_\text{true}} \in  \mathbb{R}^{n_s} \times \mathbb{R} ^{n_x}$ and the open-loop predicted 
-states $\boldsymbol{X_\text{pred}} \in  \mathbb{R}^{n_s} \times \mathbb{R} ^{n_x}$, starting from the same initial state $\boldsymbol{x_\text{true}}^{(0)} = \boldsymbol{x_\text{pred}}^{(0)}$ and applying the same series of control vector inputs $\boldsymbol{U} \in  \mathbb{R}^{n_s} \times \mathbb{R} ^{n_u}$ for $n_s$ prediction steps. Here, $\boldsymbol{X_\text{true}} = [\boldsymbol{x_\text{true}}^{(1)}, \ldots, \boldsymbol{x_\text{true}}^{(n_s)}]$, $\boldsymbol{X_\text{pred}} = [\boldsymbol{x_\text{pred}}^{(1)}, \ldots, \boldsymbol{x_\text{pred}}^{(n_s)}]$, and $\boldsymbol{U} = [\boldsymbol{u}^{(0)}, \ldots, \boldsymbol{u}^{(n_s-1)}]$, where $\boldsymbol{x_\text{true}}^{(i)}$,  $\boldsymbol{x_\text{pred}}^{(i)}$, and $\boldsymbol{u}^{(0)}, \forall i \in \{0,\dots,n_s\}$ are defined as in Equation~\ref{eq:stm_states}. Our model operates on a discretization time of $T_s = 0.02s$, and it is essential to highlight that the prediction model remains uninformed about the real states, i.\,e. the model does not receive updates during the simulation.
+states $\boldsymbol{X_\text{pred}} \in  \mathbb{R}^{n_s} \times \mathbb{R} ^{n_x}$, starting from the same initial state $\boldsymbol{x_\text{true}}^{(0)} = \boldsymbol{x_\text{pred}}^{(0)}$ and applying the same series of control vector inputs $\boldsymbol{U} \in  \mathbb{R}^{n_s} \times \mathbb{R} ^{n_u}$ for $n_s$ prediction steps. Here, $\boldsymbol{X_\text{true}} = [\boldsymbol{x_\text{true}}^{(1)}, \ldots, \boldsymbol{x_\text{true}}^{(n_s)}]$, $\boldsymbol{X_\text{pred}} = [\boldsymbol{x_\text{pred}}^{(1)}, \ldots, \boldsymbol{x_\text{pred}}^{(n_s)}]$, and $\boldsymbol{U} = [\boldsymbol{u}^{(0)}, \ldots, \boldsymbol{u}^{(n_s-1)}]$, where $\boldsymbol{x_\text{true}}^{(i)}$,  $\boldsymbol{x_\text{pred}}^{(i)}$, and $\boldsymbol{u}^{(0)}, \forall i \in \{0,\dots,n_s\}$ are defined as in Equation (1). Our model operates on a discretization time of $T_s = 0.02s$, and it is essential to highlight that the prediction model remains uninformed about the real states, i.\,e. the model does not receive updates during the simulation.
 
-We refine our parameter estimates through an iterative process of manual tuning. The resulting single-track and tire model parameters are listed in Table \ref{tab:stm_parameters} and \ref{tab:tire_model}, respectively, where $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles.
+We refine our parameter estimates through an iterative process of manual tuning. The resulting single-track and tire model parameters are listed in the Table, where $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles.
 
 | Parameter | Front | Rear | Description        |
 |-----------|-------|------|--------------------|
 | $B$       | 10    | 10   | Stiffness factor  |
 | $C$       | 1.3   | 1.6  | Shape factor       |
-| $D$       | 1.2⋅$F_{z,f}$ | 2.1⋅$F_{z,r}$ | Peak value    |
+| $D$       | $1.2⋅F_{z,f}$ | $2.1⋅F_{z,r}$ | Peak value    |
 | $E$       | 0.97  | 0.97 | Curvature factor   |
 
 <p align="center">
@@ -116,7 +125,7 @@ We refine our parameter estimates through an iterative process of manual tuning.
   style="margin: 0 auto; max-width: 100px">
 </p>
 
-In this figure, we present the open-loop prediction assessment spanning $n_s = 1000$ prediction steps, corresponding to a 20s ride. During this evaluation, the steering-wheel angle remains fixed at 90°, while the vehicle speed undergoes a steady increase, as detailed in \cite{international2021passenger}. 
+In this figure, we present the open-loop prediction assessment spanning $n_s = 1000$ prediction steps, corresponding to a 20s ride. During this evaluation, the steering-wheel angle remains fixed at 90°, while the vehicle speed undergoes a steady increase. 
 
 It is important to emphasize that the accuracy of parameter estimation relies heavily on both the selected model and the quality of the measured data. Additionally, our approach did not employ any state estimation and sensor fusion techniques to enhance state estimations.
 
