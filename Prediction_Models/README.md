@@ -82,7 +82,7 @@ $$
 
 Here, the driving force at the wheel is defined as $ F_d = m \cdot a$ and the rolling resistance forces [2] are defined as
 $Fr_{\{f,r\}} = fr \cdot F_{z,{\{f,r\}}}$. The rolling constant $f_r$ is defined as $fr = fr_0 + fr_1 \cdot \frac{v}{100} + fr_4 \cdot \left(\frac{v}{100}\right)^4$, where $v$ represents the absolute velocity in km/h [2].
-The aerodynamic force is calculated as $F_\text{aero} = 0.5\cdot \rho \cdot S \cdot Cd \cdot v_\text{lon}^2 $ [2] and $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles $F_{z,{\{f,r\}}} = \frac{m \cdot g \cdot l_{\{r,f\}}}{l_f + l_r}$. 
+The aerodynamic force is calculated as $F_\text{aero} = 0.5\cdot \rho \cdot S \cdot Cd \cdot v_\text{lon}^2$ [2] and $F_{z,\{f/r\}}$ represents the vertical static tire load at the front and rear axles $F_{z,{\{f,r\}}} = \frac{m \cdot g \cdot l_{\{r,f\}}}{l_f + l_r}$. 
 
 ## Parameter Identification for EDGAR vehicle (VW T7 Multivan)
 To identify the model parameters, we perform ISO 4138-compliant steady-state circular driving tests. 
