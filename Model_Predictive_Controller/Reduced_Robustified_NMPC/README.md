@@ -3,6 +3,8 @@
 $$
 \begin{equation}
 \begin{aligned}
+&\textbf{Problem} && \textbf{R²NMPC with}\\ 
+&&&\textbf{Ellipsoidal Uncertainty Sets}\\
 & \underset{\mathrm{x}(.), \boldsymbol{u}(.)}{\min} &  \int^{T_p}_{\tau=0} & l(\boldsymbol{x}(\tau),\boldsymbol{u}(\tau)) \space  d\tau + m(\boldsymbol{x}(T_p))\\ 
 & \text{subject to} & & \text { --- initial state ---} \\
 & & & \boldsymbol{x_0} \leq \boldsymbol{x}(0) \leq \boldsymbol{x_0} \text {, }  \\
