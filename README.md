@@ -1,4 +1,4 @@
-# TUM-Motion-CONTROL
+# TUM-CONTROL
 A modular simulation framework for Python ultra-rapid prototyping of self-adaptive, stochastic and robust Nonlinear Model Predictive Control (NMPC) for Autonomous Vehicle Motion Control developed by the TUM Motion Control Team of the Autonomous Vehicle Systems Lab (AVS) at TUM.
 <p align="center">
 <img
