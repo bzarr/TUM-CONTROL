@@ -18,7 +18,7 @@ veh_params_file_MPC  : "EDGAR/veh_params_pred.yaml"
 tire_params_file_MPC : "EDGAR/pacejka_params.yaml"
 
 # --- Visualization general params
-live_visualization: 2
+live_visualization: 0
     # 0 -> no Live Visualization
     # 1 -> live: (x,y) evolution only
     # 2 -> live: (x,y) evolution + lat dev + velocity + gg diag

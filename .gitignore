@@ -6,3 +6,5 @@ Logs/
 acados_ocp_NMPC.json
 acados_ocp_SNMPC.json
 acados_ocp_R2NMPC.json
+**monitor.csv
+events.out.**

@@ -2,8 +2,8 @@ costfunction_type: 'NONLINEAR_LS' # 'NONLINEAR_LS' or 'EXTERNAL'
 solver_build: True
 solver_generate_C_code: True
 
-enable_WMPC: False           # Weights-varying MPC (COMING-SOON) CAUTION: must be disabled for WMPC training
-WMPC_model: 'Python/TUM_Learning_To_Adapt/Safe_WMPC/_models/new_BO_F'
+enable_WMPC: True           # Weights-varying MPC (COMING-SOON) CAUTION: must be disabled for WMPC training
+WMPC_model: 'Learning_To_Adapt/SafeRL_WMPC/_models/new_BO_F'
 weights_update_period: 20   # number of MPC steps to run between weight updates
 
 ## Static cost function parameters optimized with Multiobjective Bayesian Optimization

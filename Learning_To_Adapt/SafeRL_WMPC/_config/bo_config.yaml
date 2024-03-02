@@ -1,0 +1,39 @@
+identifier: 'test'
+
+# flags
+do_boundary_sampling: False
+do_random_sampling: True
+do_bayesian_optimization: True
+save_trials: True
+
+# number of processes/CPU cores to occupy
+n_processes: 8
+# number of iterations
+n_initial: 50
+n_bayesian_optimization: 400
+# batch size (number of trials evaluated simultaneously)
+batch_size: 5
+
+# constraint thresholds
+max_lat_dev: 2.0
+max_a_comb: 1.02
+
+# reference points for hypervolume calculation
+reference_point_0: [-0.5, -0.75]
+reference_point_1: [-0.4, -0.90]
+
+# parameters for acquisition function optimization
+n_sobol_samples: 1024
+n_restarts: 20
+n_raw_samples: 512
+max_iter: 400
+epsilon: 0.8                # exploration factor, gives weight to mean vs. std
+
+# parameter bounds
+lims_qxy:       [1, 30]
+lims_qyaw:      [0, 5]
+lims_qvel:      [1, 30]
+lims_rjerk:     [0, 6]
+lims_rsteering: [20, 400]
+lims_L1:        [500, 2000]
+lims_L2:        [500, 2000]

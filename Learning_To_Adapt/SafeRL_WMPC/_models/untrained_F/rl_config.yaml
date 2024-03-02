@@ -1,0 +1,41 @@
+actions_file: Learning_To_Adapt/SafeRL_WMPC/_parameters/F.csv
+adaptive_lr_decay: 0.4
+adaptive_lr_final: 0.0001
+adaptive_lr_init: 0.005
+batch_size: 4096
+clip_range: 0.2
+ent_coef: 0.006
+episode_length: 128
+evaluation_frequency: 10
+gae_lambda: 0.98
+gamma: 0.8
+identifier: untrained_F
+learning_rate: 0.004
+max_grad_norm: 0.5
+max_lat_dev: 2.0
+n_environments: 16
+n_envs_eval: 1
+n_epochs: 5
+n_eval_episodes: 1
+n_mpc_steps: 20
+n_obs_stack: 1
+n_steps: 100000
+n_training_steps: 1500000
+net_arch:
+- 128
+- 256
+- 128
+note: ''
+obs_anticipation_horizon: 38
+obs_n_anticipation_points: 10
+rew_lims_lat_dev:
+- 0.0
+- 0.4
+rew_lims_vel_dev:
+- 0.0
+- 1.0
+rew_sigmas:
+- 0.1
+- 0.5
+use_adaptive_learning_rate: true
+vf_coef: 0.5

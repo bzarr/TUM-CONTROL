@@ -19,7 +19,7 @@ from typing import Tuple
 # TODO: automatic create and save a log file and save plots in online Mode
 # TODO: extend Logger with a possibility to load saved data and use the final evaluation method 
 class Logger:
-    def __init__(self,sim, X0_sim, alat, MPC): #acc_min, ax_lim, ay_lim):
+    def __init__(self, sim, X0_sim, alat, MPC): #acc_min, ax_lim, ay_lim):
         self.MPC = MPC
         nref    = 4                # save refs for velocity and yaw
         self.nu = MPC.model.u.size()[0]

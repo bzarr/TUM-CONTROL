@@ -13,9 +13,9 @@ from Vehicle_Simulator.VehicleSimulator import PassengerVehicleSimulator
 
 """ Here several possible NMPCs: choose the one that suits you while creating the MPC object, 
 -----just replace it with the controller wou wish ;) """
-from Model_Predictive_Controller.Nominal_NMPC.NMPC_class import Nonlinear_Model_Predictive_Controller as Model_Predictive_Controller
+# from Model_Predictive_Controller.Nominal_NMPC.NMPC_class import Nonlinear_Model_Predictive_Controller as Model_Predictive_Controller
 # from Model_Predictive_Controller.Stochastic_NMPC.SNMPC_class import Stochastic_Nonlinear_Model_Predictive_Controller as Model_Predictive_Controller
-# from Model_Predictive_Controller.Reduced_Robustified_NMPC.Reduced_Robustified_NMPC_class import Reduced_Robustified_Nonlinear_Model_Predictive_Controller as Model_Predictive_Controller
+from Model_Predictive_Controller.Reduced_Robustified_NMPC.Reduced_Robustified_NMPC_class import Reduced_Robustified_Nonlinear_Model_Predictive_Controller as Model_Predictive_Controller
 
 from Utils.SimulationMode_main_class import MPC_Sim
 

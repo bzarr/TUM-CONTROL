@@ -8,10 +8,15 @@ Created on Wed Jun  7 13:07:00 2023
 import numpy as np
 import casadi as cs
 import yaml
+import os
+import scipy
+import torch
 from torch import Tensor
 from Model_Predictive_Controller.Reduced_Robustified_NMPC.Reduced_Robustified_NMPC_acados_settings import acados_settings
 from Model_Predictive_Controller.Reduced_Robustified_NMPC.Robust_NMPC_pred_model_utils import P_propagation
 import time
+from Utils.MPC_sim_utils import LonLatDeviations
+
 '''
 7. MPC
     - initialisation: 
@@ -197,47 +202,47 @@ class Reduced_Robustified_Nonlinear_Model_Predictive_Controller:
         self.nh = self.ocp.model.con_h_expr.shape[0]
         self.nh_e = self.ocp.model.con_h_expr_e.shape[0]   
 
-        ## --- COMING SOON: Weights-varying MPC (WMPC)---
+        ## --- Weights-varying MPC (WMPC)---
         self.WMPC = False
         # setup WMPC if the respective flag is set
-        # if self.MPC_params['enable_WMPC']:
-        #     self.WMPC = True
-        #     from stable_baselines3 import PPO
-        #     from TUM_Learning_To_Adapt.Safe_WMPC.helpers import load_config
-        #     from TUM_Learning_To_Adapt.Safe_WMPC.RL_WMPC.observation import ObservationGenerator
+        if self.MPC_params['enable_WMPC']:
+            self.WMPC = True
+            from stable_baselines3 import PPO
+            from Learning_To_Adapt.SafeRL_WMPC.helpers import load_config
+            from Learning_To_Adapt.SafeRL_WMPC.RL_WMPC.observation import ObservationGenerator
 
-        #     # load the trained model
-        #     base_path = os.path.join(self.MPC_params['WMPC_model'])
-        #     model_path = os.path.join(base_path, 'best_model', 'best_model')
-        #     self.WMPC_model = PPO.load(model_path)
+            # load the trained model
+            base_path = os.path.join(self.MPC_params['WMPC_model'])
+            model_path = os.path.join(base_path, 'best_model', 'best_model')
+            self.WMPC_model = PPO.load(model_path)
 
-        #     # load the model config file
-        #     config = load_config(os.path.join(base_path, 'rl_config.yaml'))
+            # load the model config file
+            config = load_config(os.path.join(base_path, 'rl_config.yaml'))
 
-        #     # load the available parameter sets from the specified file
-        #     with open(config['actions_file'], 'r') as file:
-        #         lines = file.readlines()
-        #     n_actions = len(lines)
-        #     self.WMPC_parameter_sets = torch.empty((n_actions, 7))
-        #     for i, line in enumerate(lines):
-        #         strs = line.strip().split(',')
-        #         params = torch.tensor([float(p) for p in strs])
-        #         self.WMPC_parameter_sets[i] = params
+            # load the available parameter sets from the specified file
+            with open(config['actions_file'], 'r') as file:
+                lines = file.readlines()
+            n_actions = len(lines)
+            self.WMPC_parameter_sets = torch.empty((n_actions, 7))
+            for i, line in enumerate(lines):
+                strs = line.strip().split(',')
+                params = torch.tensor([float(p) for p in strs])
+                self.WMPC_parameter_sets[i] = params
 
-        #     # set up observation generator and tensor containing the observations
-        #     self.observation_generator = ObservationGenerator(
-        #         anticipation_horizon=config['obs_anticipation_horizon'],
-        #         n_anticipation_points=config['obs_n_anticipation_points']
-        #     )
-        #     self.n_obs_stack = config['n_obs_stack']
-        #     self.obs = torch.zeros(
-        #         (self.observation_generator.n_observations * self.n_obs_stack)
-        #     )
+            # set up observation generator and tensor containing the observations
+            self.observation_generator = ObservationGenerator(
+                anticipation_horizon=config['obs_anticipation_horizon'],
+                n_anticipation_points=config['obs_n_anticipation_points']
+            )
+            self.n_obs_stack = config['n_obs_stack']
+            self.obs = torch.zeros(
+                (self.observation_generator.n_observations * self.n_obs_stack)
+            )
 
-        #     # initialize weight update scheduler
-        #     self.steps_since_weight_update = 0
-        #     self.weight_update_period = self.MPC_params['weights_update_period']
-        #     self.current_action = None
+            # initialize weight update scheduler
+            self.steps_since_weight_update = 0
+            self.weight_update_period = self.MPC_params['weights_update_period']
+            self.current_action = None
 
         return
     
@@ -365,39 +370,38 @@ class Reduced_Robustified_Nonlinear_Model_Predictive_Controller:
             self.stats[3] = np.max(self.acados_solver.get_stats('qp_iter'))
             self.stats[4] = status
 
-        ## --- COMING SOON: Weights-varying MPC ---
-        # WMPC handling
-        # if self.WMPC:
-        #     # weights update step
-        #     if self.steps_since_weight_update >= self.weight_update_period:
-        #         self.steps_since_weight_update = 0
-        #         v = self.x0[3]
-        #         _, lat_dev = LonLatDeviations(
-        #             self.x0[2], self.x0[0], self.x0[1],
-        #             current_ref_traj['pos_x'][0], current_ref_traj['pos_y'][0]
-        #         )
-        #         vel_dev = self.x0[3] - current_ref_traj['ref_v'][0]
-        #         # obtain observation
-        #         _obs = self.observation_generator.get_observation(
-        #             v, lat_dev, vel_dev, current_ref_traj, self.Ts
-        #         )
+        ## --- Weights-varying MPC ---
+        if self.WMPC:
+            # weights update step
+            if self.steps_since_weight_update >= self.weight_update_period:
+                self.steps_since_weight_update = 0
+                v = self.x0[3]
+                _, lat_dev = LonLatDeviations(
+                    self.x0[2], self.x0[0], self.x0[1],
+                    current_ref_traj['pos_x'][0], current_ref_traj['pos_y'][0]
+                )
+                vel_dev = self.x0[3] - current_ref_traj['ref_v'][0]
+                # obtain observation
+                _obs = self.observation_generator.get_observation(
+                    v, lat_dev, vel_dev, current_ref_traj, self.Ts
+                )
 
-        #         # if using observation stacking, shift the new observation into the stack
-        #         if self.n_obs_stack > 1:
-        #             n_obs = self.observation_generator.n_observations
-        #             self.obs = torch.roll(self.obs, shifts=-n_obs)
-        #             self.obs[-n_obs:] = torch.tensor(_obs)
-        #         else:
-        #             self.obs = _obs
+                # if using observation stacking, shift the new observation into the stack
+                if self.n_obs_stack > 1:
+                    n_obs = self.observation_generator.n_observations
+                    self.obs = torch.roll(self.obs, shifts=-n_obs)
+                    self.obs[-n_obs:] = torch.tensor(_obs)
+                else:
+                    self.obs = _obs
 
-        #         # select a parameter set as predicted by the model
-        #         self.current_action, _ = self.WMPC_model.predict(self.obs, deterministic=True)
-        #         params = self.WMPC_parameter_sets[self.current_action]
+                # select a parameter set as predicted by the model
+                self.current_action, _ = self.WMPC_model.predict(self.obs, deterministic=True)
+                params = self.WMPC_parameter_sets[self.current_action]
 
-        #         # update the controller parameters
-        #         self.update_cost_function_weights(params)
+                # update the controller parameters
+                self.update_cost_function_weights(params)
 
-        #     self.steps_since_weight_update += 1
+            self.steps_since_weight_update += 1
 
         return u0, self.pred_X, self.stats
 

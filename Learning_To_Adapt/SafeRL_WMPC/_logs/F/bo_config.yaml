@@ -1,0 +1,43 @@
+batch_size: 5
+do_bayesian_optimization: true
+do_boundary_sampling: false
+do_random_sampling: true
+epsilon: 0.8
+identifier: F
+lims_L1:
+- 500
+- 2000
+lims_L2:
+- 500
+- 2000
+lims_qvel:
+- 1
+- 30
+lims_qxy:
+- 1
+- 30
+lims_qyaw:
+- 0
+- 5
+lims_rjerk:
+- 0
+- 6
+lims_rsteering:
+- 20
+- 400
+max_a_comb: 1.02
+max_iter: 400
+max_lat_dev: 2.0
+n_bayesian_optimization: 400
+n_initial: 50
+n_processes: 8
+n_raw_samples: 512
+n_restarts: 20
+n_sobol_samples: 1024
+reference_point_0:
+- -0.5
+- -0.75
+reference_point_1:
+- -0.4
+- -0.9
+save_trials: true
