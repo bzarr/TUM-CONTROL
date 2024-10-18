@@ -1,5 +1,5 @@
 # TUM-CONTROL
-A modular simulation framework for Python ultra-rapid prototyping of self-adaptive, stochastic and robust Nonlinear Model Predictive Control (NMPC) for Autonomous Vehicle Motion Control developed by the TUM Motion Control Team of the Autonomous Vehicle Systems Lab (AVS) at TUM.
+A modular simulation framework for Python ultra-rapid prototyping of self-adaptive, stochastic and robust Nonlinear Model Predictive Control (NMPC) for Autonomous Vehicle Motion Control developed by the TUM CONTROL Team of the Autonomous Vehicle Systems Lab (AVS) at TUM.
 <p align="center">
 <img
   src="Utils/TUM-CONTROL_logo.png"
@@ -137,11 +137,16 @@ The following students made major contributions to this framework throughout the
 - Chenyang Wang (Stochastic NMPC (SNMPC) and Reinforcement Learning driven adaptive SNMPC (aSNMPC))
 - Marios Spanakakis (Safe Reinforcement Learning driven Weights-varying MPC with Pareto-Optimal sets)
 
-## Papers
-Zarrouki, B., Wang, C., & Betz, J. (2023). A Stochastic Nonlinear Model Predictive Control with an Uncertainty Propagation Horizon for Autonomous Vehicle Motion Control. arXiv preprint arXiv:2310.18753. http://arxiv.org/abs/2310.18753
+## Coming soon
+DRL driven adaptive SNMPC
 
-Zarrouki, B., Nunes, J., & Betz, J. (2023). R $^ 2$ NMPC: A Real-Time Reduced Robustified Nonlinear Model Predictive Control with Ellipsoidal Uncertainty Sets for Autonomous Vehicle Motion Control. https://arxiv.org/abs/2311.06420
+## Papers
+B. Zarrouki, V. Klös, N. Heppner, S. Schwan, R. Ritschel and R. Voßwinkel, "Weights-varying MPC for Autonomous Vehicle Guidance: a Deep Reinforcement Learning Approach," 2021 European Control Conference (ECC), Delft, Netherlands, 2021, pp. 119-125, doi: 10.23919/ECC54610.2021.9655042. https://ieeexplore.ieee.org/abstract/document/9655042 
+
+B. Zarrouki, C. Wang and J. Betz, "A Stochastic Nonlinear Model Predictive Control with an Uncertainty Propagation Horizon for Autonomous Vehicle Motion Control," 2024 American Control Conference (ACC), Toronto, ON, Canada, 2024, pp. 5466-5473, doi: 10.23919/ACC60939.2024.10645032. https://ieeexplore.ieee.org/abstract/document/10645032
+
+B. Zarrouki, J. Nunes, and J. Betz, "R²NMPC: A Real-Time Reduced Robustified Nonlinear Model Predictive Control with Ellipsoidal Uncertainty Sets for Autonomous Vehicle Motion Control." IFAC-PapersOnLine 58.18 (2024): 309-316. https://www.sciencedirect.com/science/article/pii/S2405896324014277
 
 Zarrouki, B., Wang, C., & Betz, J. (2023). Adaptive Stochastic Nonlinear Model Predictive Control with Look-ahead Deep Reinforcement Learning for Autonomous Vehicle Motion Control. https://arxiv.org/abs/2311.04303 
 
-Zarrouki, B., Spanakakis, M., & Betz, J. (2024). A Safe Reinforcement Learning driven Weights-varying Model Predictive Control for Autonomous Vehicle Motion Control. https://arxiv.org/abs/2402.02624 
+B. Zarrouki, M. Spanakakis and J. Betz, "A Safe Reinforcement Learning driven Weights-varying Model Predictive Control for Autonomous Vehicle Motion Control," 2024 IEEE Intelligent Vehicles Symposium (IV), Jeju Island, Korea, Republic of, 2024, pp. 1401-1408, doi: 10.1109/IV55156.2024.10588747. https://ieeexplore.ieee.org/document/10588747
