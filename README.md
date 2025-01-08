@@ -141,12 +141,13 @@ The following students made major contributions to this framework throughout the
 DRL driven adaptive SNMPC
 
 ## Papers
-B. Zarrouki, V. Klös, N. Heppner, S. Schwan, R. Ritschel and R. Voßwinkel, "Weights-varying MPC for Autonomous Vehicle Guidance: a Deep Reinforcement Learning Approach," 2021 European Control Conference (ECC), Delft, Netherlands, 2021, pp. 119-125, doi: 10.23919/ECC54610.2021.9655042. https://ieeexplore.ieee.org/abstract/document/9655042 
+## Papers
+Zarrouki, Baha, Chenyang Wang, and Johannes Betz. "A stochastic nonlinear model predictive control with an uncertainty propagation horizon for autonomous vehicle motion control." 2024 American Control Conference (ACC). IEEE, 2024. https://ieeexplore.ieee.org/abstract/document/10645032/ 
 
-B. Zarrouki, C. Wang and J. Betz, "A Stochastic Nonlinear Model Predictive Control with an Uncertainty Propagation Horizon for Autonomous Vehicle Motion Control," 2024 American Control Conference (ACC), Toronto, ON, Canada, 2024, pp. 5466-5473, doi: 10.23919/ACC60939.2024.10645032. https://ieeexplore.ieee.org/abstract/document/10645032
+Zarrouki, Baha, João Nunes, and Johannes Betz. "R²NMPC: A Real-Time Reduced Robustified Nonlinear Model Predictive Control with Ellipsoidal Uncertainty Sets for Autonomous Vehicle Motion Control." IFAC-PapersOnLine 58.18 (2024): 309-316. https://www.sciencedirect.com/science/article/pii/S2405896324014277 
 
-B. Zarrouki, J. Nunes, and J. Betz, "R²NMPC: A Real-Time Reduced Robustified Nonlinear Model Predictive Control with Ellipsoidal Uncertainty Sets for Autonomous Vehicle Motion Control." IFAC-PapersOnLine 58.18 (2024): 309-316. https://www.sciencedirect.com/science/article/pii/S2405896324014277
+Zarrouki, Baha, Chenyang Wang, and Johannes Betz. "Adaptive stochastic nonlinear model predictive control with look-ahead deep reinforcement learning for autonomous vehicle motion control." 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2024. https://ieeexplore.ieee.org/abstract/document/10801876 
 
-Zarrouki, B., Wang, C., & Betz, J. (2023). Adaptive Stochastic Nonlinear Model Predictive Control with Look-ahead Deep Reinforcement Learning for Autonomous Vehicle Motion Control. https://arxiv.org/abs/2311.04303 
+B. Zarrouki, M. Spanakakis and J. Betz, "A Safe Reinforcement Learning driven Weights-varying Model Predictive Control for Autonomous Vehicle Motion Control," 2024 IEEE Intelligent Vehicles Symposium (IV), Jeju Island, Korea, Republic of, 2024, pp. 1401-1408, doi: 10.1109/IV55156.2024.10588747. https://ieeexplore.ieee.org/document/10588747
 
-B. Zarrouki, M. Spanakakis and J. Betz, "A Safe Reinforcement Learning driven Weights-varying Model Predictive Control for Autonomous Vehicle Motion Control," 2024 IEEE Intelligent Vehicles Symposium (IV), Jeju Island, Korea, Republic of, 2024, pp. 1401-1408, doi: 10.1109/IV55156.2024.10588747. https://ieeexplore.ieee.org/document/10588747
+Zarrouki, Baha, et al. "Weights-varying mpc for autonomous vehicle guidance: a deep reinforcement learning approach." 2021 European Control Conference (ECC). IEEE, 2021. https://ieeexplore.ieee.org/abstract/document/9655042

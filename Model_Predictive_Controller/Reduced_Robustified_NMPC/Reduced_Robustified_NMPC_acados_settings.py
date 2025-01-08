@@ -25,9 +25,8 @@ def acados_settings(Tf, N, x0, Q, R, Qe, L1_pen, L2_pen, ax_max_interpolant, ay_
     model               = AcadosModel()
     model.f_expl_expr   = pred_model.f_expl_expr
     model.f_impl_expr   = pred_model.f_impl_expr
-    model.xdot          = pred_model.xdot
-    model.x             = pred_model.x
     # model.xdot          = pred_model.xdot
+    model.x             = pred_model.x
     model.u             = pred_model.u
     # model.z             = pred_model.z
     model.p             = pred_model.p
