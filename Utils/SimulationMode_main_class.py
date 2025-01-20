@@ -100,7 +100,7 @@ class MPC_Sim:
         else:
             self.sim_disturbance_derivatives, self.sim_disturbance_state_estimation = np.zeros((self.Nsim, self.nx_sim)), np.zeros((self.Nsim, self.nx_sim))
             self.playback_disturbance = False
-        X0_sim = np.array([self.current_pose[0], self.current_pose[1], self.current_pose[2], self.current_pose[3], 0.0 , 0, 0.0])
+        X0_sim = np.array([self.current_pose[0], self.current_pose[1], self.current_pose[2], self.current_pose[3], 0.0 , 0.0, 0.0, 0.0])
         return X0_sim
 
     def sim_step(self, i, x, u0, pred_X):
